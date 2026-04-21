@@ -246,8 +246,8 @@ python scripts/plot_equity.py
 │   │   └── metrics/        # Performance metrics
 │
 │   ├── config.yaml         # Configuration file
-│   ├── requirements.txt    # Dependencies
-│   └── README.md           # Module-level docs (optional)
+│   └── requirements.txt    # Dependencies
+│    
 │
 └── README.md               # Main project documentation
 ```
