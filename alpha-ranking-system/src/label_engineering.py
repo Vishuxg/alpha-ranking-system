@@ -8,7 +8,7 @@ def add_labels(df, horizon=5):
         .shift(-horizon) / df["close"] - 1
     )
 
-    # ✅ SAFE ranking (no qcut)
+    
     df["target"] = df.groupby("date")["fwd_return"].transform(
         lambda x: x.rank(method="first")
     )

@@ -1,10 +1,10 @@
 def build_dataset(df):
     df = df.copy()
 
-    # ✅ Only drop rows where target is missing
+    # Only drop rows where target is missing
     df = df.dropna(subset=["target"])
 
-    # ✅ Define features explicitly
+    #  Define features explicitly
     features = [
         "momentum_5",
         "momentum_10",
@@ -12,7 +12,7 @@ def build_dataset(df):
         "volatility_10"
     ]
 
-    # ✅ Fill feature NaNs instead of dropping everything
+    #  Fill feature NaNs instead of dropping everything
     df[features] = df[features].fillna(0)
 
     # Debug

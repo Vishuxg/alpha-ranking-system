@@ -1,9 +1,14 @@
 
 __pycache__/
 *.pyc
-data/raw/
-data/processed/
-outputs/
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+outputs/*
+!outputs/predictions/.gitkeep
+!outputs/backtests/.gitkeep
+!outputs/metrics/.gitkeep
 .ipynb_checkpoints/
 .DS_Store
 Thumbs.db
