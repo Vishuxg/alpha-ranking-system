@@ -227,19 +227,30 @@ python scripts/plot_equity.py
 
 ---
 
-# 📁 Project Structure
+📁 Project Structure
+.
+├── alpha-ranking-system/  
+└── README.md               
 
-```
+📂  alpha-ranking-system/
 alpha-ranking-system/
 │
-├── src/                # Core pipeline
-├── experiments/        # Strategy runs
-├── scripts/            # Utilities
-├── data/               # Raw & processed data
-├── outputs/            # Predictions, metrics, backtests
-├── config.yaml         # Config file
-├── README.md
-```
+├── src/                # Core pipeline (features, model, backtest)
+├── experiments/        # Strategy experiments (exp_001, exp_002)
+├── scripts/            # Utility scripts (data generation, plotting)
+│
+├── data/               # Data storage
+│   ├── raw/            # Raw input data
+│   └── processed/      # Processed datasets
+│
+├── outputs/            # Results
+│   ├── predictions/    # Model predictions
+│   ├── backtests/      # Backtest results
+│   └── metrics/        # Performance metrics
+│
+├── config.yaml         # Configuration file
+└── requirements.txt    # Dependencies
+
 
 ---
 
