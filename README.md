@@ -1,111 +1,324 @@
 # 🧠 Alpha Ranking System
 
-A modular, end-to-end quantitative research pipeline for cross-sectional asset ranking using machine learning.
+An end-to-end quantitative research pipeline for ranking assets using machine learning and constructing systematic long-short portfolios.
 
 ---
 
-## 🚀 What This Project Does Well
+# 🚀 Overview
 
-### ✅ End-to-End Pipeline
+This project builds a **complete quant workflow**:
 
-* Built a complete workflow from **raw OHLCV data → features → labels → model → portfolio → backtest**
-* Fully reproducible and modular design
+```text
+Raw Data → Features → Labels → ML Model → Ranking → Portfolio → Backtest
+```
 
----
+Instead of predicting prices, the system learns:
 
-### ⚙️ Robust Feature Engineering
-
-* Implemented time-series features:
-
-  * Momentum (multi-horizon)
-  * Volatility
-  * Log returns
-* Added cross-sectional normalization (z-score)
-* Designed custom alpha signals combining multiple factors
+> **Which assets will outperform others (cross-sectional ranking)**
 
 ---
 
-### 🏷️ Proper Label Construction
-
-* Forward return–based labeling
-* Cross-sectional ranking approach (learning-to-rank setup)
-* Strict separation of **features (past)** and **labels (future)** to avoid leakage
+# ⚙️ Full Pipeline Explained
 
 ---
 
-### 🤖 Learning-to-Rank Model
+## 📊 1. Data
 
-* Used **LightGBM (LambdaRank)** for ranking assets
-* Handles cross-sectional prediction instead of naive regression
-* Grouped training by date for realistic ranking behavior
+Input format:
 
----
+```
+date, asset, open, high, low, close, volume
+```
 
-### 💼 Portfolio Construction Logic
+Data is either:
 
-* Systematic long-short strategy:
-
-  * Long top-ranked assets
-  * Short bottom-ranked assets
-* Equal-weight portfolio design
-* Clean separation between signal generation and execution
+* Generated synthetically (`scripts/generate_data.py`)
+* Or can be replaced with real market data
 
 ---
 
-### 📊 Backtesting Engine
+## ⚙️ 2. Feature Engineering (`feature_engineering.py`)
 
-* Simulates daily portfolio returns
-* Includes:
+Creates signals using past data:
 
-  * Transaction costs
-  * Turnover-based cost modeling
-* Produces realistic equity curve and performance series
+### Features:
 
----
+* Momentum (5, 10, 20 day)
+* Volatility (rolling std)
+* Log returns
+* Cross-sectional normalization (z-score)
 
-### 📁 Clean Project Architecture
+Example:
 
-* Structured like a production quant system:
+```python
+momentum_10 = price[t] / price[t-10] - 1
+```
 
-  * `data/` → raw & processed data
-  * `src/` → core pipeline modules
-  * `experiments/` → strategy variations
-  * `outputs/` → predictions, metrics, backtests
-* Easily extensible for new features, models, or strategies
+👉 These features describe **current market state**
 
 ---
 
-### 🔁 Experiment-Driven Design
+## 🏷️ 3. Label Engineering (`label_engineering.py`)
 
-* Supports multiple strategies:
+Creates future-based labels:
 
-  * Baseline (top-K ranking)
-  * Quantile-based long-short portfolios
-* Enables iterative research workflow
+```python
+fwd_return = (price[t+5] / price[t]) - 1
+```
 
----
+Then converts to ranking:
 
-### 🧪 Reproducibility
+```python
+target = rank(fwd_return across assets per day)
+```
 
-* Config-driven pipeline (`config.yaml`)
-* Deterministic data generation for testing
-* One-command execution for full pipeline
+👉 Model learns:
 
----
-
-## 🧠 Key Idea
-
-> Learn patterns from historical data to **rank assets**, not predict exact prices — and use those rankings to construct systematic portfolios.
+```text
+Which assets outperform others (not exact returns)
+```
 
 ---
 
-## 📌 Summary
+## 🧱 4. Dataset Builder (`dataset_builder.py`)
+
+* Selects features
+* Handles missing values
+* Builds:
+
+```python
+X → features  
+y → target  
+groups → number of assets per date
+```
+
+👉 Groups are required for ranking models
+
+---
+
+## 🤖 5. Model Training (`model.py`, `train.py`)
+
+Uses:
+
+👉 **LightGBM LambdaRank**
+
+Why?
+
+* Designed for ranking problems
+* Learns relative ordering
+
+Training:
+
+```bash
+python src/train.py
+```
+
+---
+
+## 🔮 6. Prediction (`predict.py`)
+
+Model outputs:
+
+```text
+Asset A → 0.82  
+Asset B → 0.21  
+Asset C → 0.65  
+```
+
+👉 Converted into ranking:
+
+```text
+A > C > B
+```
+
+---
+
+## 💼 7. Portfolio Construction (`portfolio.py`)
+
+Strategy:
+
+* Long top-K assets
+* Short bottom-K assets
+
+Weights:
+
+```python
+long weight = +1/K
+short weight = -1/K
+```
+
+👉 Market-neutral long-short portfolio
+
+---
+
+## 📊 8. Backtesting (`backtest.py`)
+
+Calculates:
+
+```python
+return = weight × forward_return
+```
+
+Includes:
+
+* Transaction costs
+* Turnover calculation
+
+Aggregates:
+
+```python
+daily_return = mean(position_returns)
+```
+
+---
+
+## 📈 9. Evaluation (`evaluate.py`)
+
+Metrics:
+
+* Sharpe Ratio
+* CAGR
+* Max Drawdown
+* Information Coefficient (IC)
+
+---
+
+# ▶️ How to Run
+
+---
+
+## 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 2. Generate data
+
+```bash
+python scripts/generate_data.py
+```
+
+---
+
+## 3. Train model
+
+```bash
+python src/train.py
+```
+
+---
+
+## 4. Run experiment
+
+```bash
+python -m experiments.exp_001.run
+```
+
+---
+
+## 5. Plot results
+
+```bash
+python scripts/plot_equity.py
+```
+
+---
+
+# 📁 Project Structure
+
+```
+alpha-ranking-system/
+│
+├── src/                # Core pipeline
+├── experiments/        # Strategy runs
+├── scripts/            # Utilities
+├── data/               # Raw & processed data
+├── outputs/            # Predictions, metrics, backtests
+├── config.yaml         # Config file
+├── README.md
+```
+
+---
+
+# 🧠 Key Concepts
+
+---
+
+## 🔹 Ranking vs Prediction
+
+❌ Predict price
+❌ Predict return
+
+✅ Rank assets (best → worst)
+
+---
+
+## 🔹 No Data Leakage
+
+* Features → past only
+* Labels → future only
+
+---
+
+## 🔹 Cross-Sectional Learning
+
+Model learns:
+
+```text
+At a given time → which asset is better
+```
+
+---
+
+# 🔬 Experiments
+
+---
+
+## exp_001
+
+* Top-K long-short strategy
+
+## exp_002
+
+* Quantile-based portfolio
+
+---
+
+# ⚠️ Notes
+
+* Synthetic data may not contain strong alpha
+* Model performance depends heavily on feature quality
+* This project focuses on **pipeline + methodology**, not guaranteed profitability
+
+---
+
+# 🧠 Summary
 
 This project demonstrates:
 
-* Strong understanding of **quantitative research workflow**
-* Ability to build **production-style ML pipelines**
-* Clear separation of **data, modeling, and execution layers**
-* Practical implementation of **alpha modeling and backtesting**
+* End-to-end ML pipeline for quant trading
+* Learning-to-rank modeling
+* Feature engineering for financial data
+* Portfolio construction & backtesting
+* Clean, modular system design
+
+---
+
+# 🚀 Future Improvements
+
+* Factor models (market, sector)
+* Risk-neutral portfolios
+* Walk-forward training
+* Feature importance analysis
+* Deep learning ranking models
+
+---
+
+# 📌 Final Thought
+
+> Alpha is not in the model — it is in the data and features.
 
 ---
