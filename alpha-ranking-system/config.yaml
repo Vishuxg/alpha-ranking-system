@@ -1,0 +1,17 @@
+data:
+  path: "data/raw/data.csv"
+
+model:
+  params:
+    objective: lambdarank
+    metric: ndcg
+    learning_rate: 0.05
+    num_leaves: 15
+    min_data_in_leaf: 20
+
+train:
+  train_end: "2020-01-01"
+
+portfolio:
+  top_k: 10
+  transaction_cost: 0.001
